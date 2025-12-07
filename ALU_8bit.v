@@ -1,5 +1,51 @@
 `timescale 1ns / 1ps
 
+module ALU_8bit_pipeline (
+    input  wire        clk,
+    input  wire        rst,
+    input  wire [7:0]  A,
+    input  wire [7:0]  B,
+    input  wire        carry_in,
+    input  wire [4:0]  alu_ctrl,
+
+    output reg  [7:0]  result,
+    output reg         flag_carry,
+    output reg         flag_zero,
+    output reg         flag_overflow,
+    output reg         flag_negative
+);
+
+    wire [7:0] comb_result;
+    wire c, z, o, n;
+
+    ALU_8bit comb (
+        .A(A), .B(B), .carry_in(carry_in),
+        .alu_ctrl(alu_ctrl),
+        .result(comb_result),
+        .flag_carry(c),
+        .flag_zero(z),
+        .flag_overflow(o),
+        .flag_negative(n)
+    );
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            result        <= 0;
+            flag_carry    <= 0;
+            flag_zero     <= 0;
+            flag_overflow <= 0;
+            flag_negative <= 0;
+        end else begin
+            result        <= comb_result;
+            flag_carry    <= c;
+            flag_zero     <= z;
+            flag_overflow <= o;
+            flag_negative <= n;
+        end
+    end
+endmodule
+
+
 module ALU_8bit (
     input  wire [7:0] A,
     input  wire [7:0] B,
